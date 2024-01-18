@@ -8,4 +8,5 @@ Edit this file to:
 Commit your changes to your local repository.
 Push your changes to a new repository in your github account.
 '''
-print("hello")
+print("Hello Peter Mica")
+ 
