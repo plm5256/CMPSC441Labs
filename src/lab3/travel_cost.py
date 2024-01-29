@@ -9,7 +9,7 @@ A terrain is generated for you
 '''
 import numpy as np
 
-def get_route_cost(route_coordinate, game_map):
+def get_route_cost(route_coordinates, game_map):
     """
     This function takes in a route_coordinate as a tuple of coordinates of cities to connect, 
     example:  and a game_map as a numpy array of floats,
@@ -40,6 +40,11 @@ def get_route_cost(route_coordinate, game_map):
     """
     # Build a path from start to end that looks like [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (5, 4)]
     pass 
+
+    from skimage.draw import line_nd
+
+    path = line_nd(route_coordinates[0], route_coordinates[1], endpoint= false)
+
     return game_map[tuple(zip(*path))].sum()
 
 
