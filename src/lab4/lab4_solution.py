@@ -45,7 +45,36 @@ class AiPlayer(Player):
         self.initial_weapon = random_weapon_select()
     
     def weapon_selecting_strategy(self):
-        pass
+        
+        # If the opponent has made no choices yet, we select a random weapon
+        if len(self.opponent_choices) < 4:
+            return random_weapon_select()
+
+        # If there are any 
+        elif (chkList(self.opponent_choices[:3]) != True):
+            return counterOpWeapon(self.my_choices[-1])
+        
+        # If the list of opponents weapon choices are all the same, we can assume that
+        # it is the single agent, so we will always select the weapon which counters it
+        elif (chkList(self.opponent_choices) == True):
+            return counterOpWeapon(self.opponent_choices[0])
+        
+        # If there is a change in the choices, we can the determine it's the switch
+        else:
+            return counterOpWeapon(self.opponent_choices[-1])
+
+# Function to select the appropriate weapon counter based on the assumed choice by the opponent       
+def counterOpWeapon(opChoice):
+    if opChoice == 0:
+        return 1
+    elif opChoice == 1:
+        return 2
+    elif opChoice == 2:
+        return 0
+
+# Check if all elements in the list are the same
+def chkList(lst):
+    return len(set(lst)) == 1
 
 
 if __name__ == '__main__':
