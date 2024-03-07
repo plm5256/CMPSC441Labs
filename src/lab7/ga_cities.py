@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 import pygad
 import numpy as np
 
+from perlin_noise import PerlinNoise
+
 import sys
 from pathlib import Path
 
@@ -21,16 +23,52 @@ sys.path.append(str((Path(__file__) / ".." / ".." / "..").resolve().absolute()))
 
 from src.lab5.landscape import elevation_to_rgba
 
+import operator
 
 def game_fitness(cities, idx, elevation, size):
-    fitness = 0.0001  # Do not return a fitness of 0, it will mess up the algorithm.
+      # Do not return a fitness of 0, it will mess up the algorithm. Should return positive
     """
     Create your fitness function here to fulfill the following criteria:
     1. The cities should not be under water
     2. The cities should have a realistic distribution across the landscape
     3. The cities may also not be on top of mountains or on top of each other
     """
-    return fitness
+
+    fitness_array = []
+
+    if len(set(cities)) != len(cities):
+
+        return 0.0001
+
+    for city in cities:
+        coord = str(city)
+    
+
+
+        if (len(coord) == 2):
+            xcoord = int(coord[0])
+            ycoord = int(coord[1])
+        elif (len(coord) == 1):
+            xcoord = int(coord[0])
+            ycoord = 0
+        elif (len(coord) == 0):
+            xcoord = 0
+            ycoord = 0
+        else:
+            xcoord = int(coord[:2])
+            ycoord = int(coord[2:])
+        
+
+        fitness_value = 1 - abs(elevation[xcoord][ycoord] - 0.5) + 0.00001
+        print("Elevation: " + str(xcoord) + "," + str(ycoord) + " | " + str(elevation[xcoord][ycoord]) + " fitness: " + str(fitness_value))
+        fitness_array.append(fitness_value)
+
+    fitness = sum(fitness_array)
+
+    fit = fitness/len(cities)
+
+   
+    return fit
 
 
 def setup_GA(fitness_fn, n_cities, size):
@@ -43,7 +81,7 @@ def setup_GA(fitness_fn, n_cities, size):
     :param size: The size of the grid
     :return: The fitness function and the GA instance.
     """
-    num_generations = 100
+    num_generations = 50
     num_parents_mating = 10
 
     solutions_per_population = 300
@@ -108,12 +146,24 @@ def show_cities(cities, landscape_pic, cmap="gist_earth"):
     plt.show()
 
 
+#Elevation func
+def get_elevation(size):
+
+
+    noise = PerlinNoise(octaves=10, seed= 1)
+    xpix, ypix = size[0], size[1]
+    elevation = np.array([[noise([i/xpix, j/ypix]) for j in range(ypix)] for i in range(xpix)])
+
+    return elevation
+
+
 if __name__ == "__main__":
     print("Initial Population")
 
     size = 100, 100
     n_cities = 10
-    elevation = []
+    elevation = get_elevation(size)
+
     """ initialize elevation here from your previous code"""
     # normalize landscape
     elevation = np.array(elevation)
