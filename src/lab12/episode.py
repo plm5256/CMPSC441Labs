@@ -15,35 +15,41 @@ Reward is the reward for the player for that turn.
 import pygame
 from pathlib import Path
 
-from lab11.sprite import Sprite
-from lab11.turn_combat import CombatPlayer, Combat
-from lab11.pygame_ai_player import PyGameAICombatPlayer
+from lab11.turn_combat import Combat
 from lab11.pygame_human_player import PyGameHumanCombatPlayer
+from lab11.pygame_combat import PyGameComputerCombatPlayer, run_turn
 
 def run_episode(playerOne, playerTwo):
-    p1HP = playerOne.health
-    p2HP = playerTwo.health
-
-    p1WEAP = playerOne.weapon
 
     #Create list for tuples
     episode = []
 
-    while p1HP > 0 or p2HP > 0:
+    currentGame = Combat()
 
-        #Setup observation
-        observation = (p1HP, p2HP)
+    #Setup Players
+    player = PyGameHumanCombatPlayer(playerOne)
+    opponent = PyGameComputerCombatPlayer(playerTwo)
 
-        #Setup player weapon
-        action = p1WEAP
+    # Main Game Loop
+    while not currentGame.gameOver:
+        
+        #Setup player weapon before turn begins
+        action = player.weapon_selecting_strategy(player)
+
+        #Run Combat turn
+        run_turn(currentGame, player, opponent)
+
+        #Setup observation: Get health values after turn concludes
+        observation = (player.health, opponent.health)
 
         #Setup player reward
-        reward = playerOne.reward
+        reward = currentGame.checkWin(player, opponent)
 
-        #Setup turn
+        #Record the turn as a tuple
         turn = (observation, action, reward)
 
-        #Add turn to episode
+        #Add turn to list for the episode
         episode.append(turn)
 
+    #Return the entire episode once combat concludes
     return episode
