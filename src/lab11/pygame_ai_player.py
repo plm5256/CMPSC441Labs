@@ -26,11 +26,11 @@ class PyGameAICombatPlayer:
 
     def weapon_selecting_strategy(self):
         while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key in [ord("s"), ord("a"), ord("f")]:
-                        choice = {ord("s"): 1, ord("a"): 2, ord("f"): 3}[event.key]
-                        self.weapon = choice - 1
-                        return self.weapon
+            """
+            > The agent will mimic the opponent's last choice
+            :return: The last choice of the opponent.
+            """
+            if len(self.my_choices) == 0:
+                return self.weapon
+
+            return self.my_choices[-1]

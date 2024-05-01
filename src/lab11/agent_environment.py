@@ -4,7 +4,7 @@ import random
 from sprite import Sprite
 from pygame_combat import run_pygame_combat
 from pygame_human_player import PyGameHumanPlayer
-from landscape import get_landscape, get_combat_bg
+from landscape import get_landscape, get_combat_bg, get_elevation
 from pygame_ai_player import PyGameAIPlayer
 
 from pathlib import Path
@@ -54,6 +54,7 @@ class State:
         encounter_event,
         cities,
         routes,
+        has_money,
     ):
         self.current_city = current_city
         self.destination_city = destination_city
@@ -61,6 +62,7 @@ class State:
         self.encounter_event = encounter_event
         self.cities = cities
         self.routes = routes
+        self.has_money = has_money
 
 
 if __name__ == "__main__":
@@ -91,6 +93,27 @@ if __name__ == "__main__":
     cities = get_randomly_spread_cities(size, len(city_names))
     routes = get_routes(cities)
 
+    #Calculate route cost by finding change in elevation
+    def getRouteCost(route):
+        #Extract start and end city of route
+        routeElements = route.split("to")
+        cityStart = routeElements[0]
+        cityEnd = routeElements[-1]
+        
+        #Get coords of cities
+        for i, city in enumerate(cities):
+            if (city_names[i] == cityStart):
+                startCoords = cities[i]
+            if (city_names[i] == cityEnd):
+                endCoords = cities[cityEnd]
+        
+        #Match elevation to coords
+        startElevation = get_landscape[startCoords]
+        endElevation = get_landscape[endCoords]
+
+        elevationChange = startElevation - endElevation
+        return elevationChange
+
     random.shuffle(routes)
     routes = routes[:10]
 
@@ -108,6 +131,7 @@ if __name__ == "__main__":
         encounter_event=False,
         cities=cities,
         routes=routes,
+        has_money=True, #Check if player has money for loss state
     )
 
     while True:
@@ -117,14 +141,28 @@ if __name__ == "__main__":
                 start = cities[state.current_city]
                 state.destination_city = int(chr(action))
                 destination = cities[state.destination_city]
-                player_sprite.set_location(cities[state.current_city])
-                state.travelling = True
-                print(
-                    "Travelling from", state.current_city, "to", state.destination_city
-                )
+
+                #Restrict movement if not travelling on a route
+                proposedRoute = start + " to " + destination
+                #Check if proposed route is in the list of routes
+                if proposedRoute in routes:
+                    #Then allow travel
+                    player_sprite.set_location(cities[state.current_city])
+                    state.travelling = True
+                    print(
+                        "Travelling from", state.current_city, "to", state.destination_city
+                    )
+                else:
+                    print("Selected path of travel must be an existing route")
 
         screen.fill(black)
         screen.blit(landscape_surface, (0, 0))
+
+        #If the player ever runs out of money
+        if state.has_money == False:
+            print("You have run out of funds!")
+            print("YOu have lost the game by bankruptcy!")
+            break
 
         for city in cities:
             pygame.draw.circle(screen, (255, 0, 0), city, 5)
